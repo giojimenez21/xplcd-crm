@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+    xpcrm:
+        depends_on:
+            - db
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: xpcrmapi-docker
+        container_name: xpcrm-api
+        restart: always
+        ports:
+            - "${PORT}:${PORT}"
+        environment:
+            PORT: ${PORT}
+            DB: ${DB}
+            USER_DB: ${USER_DB}
+            PASSWORD_DB: ${PASSWORD_DB}
+            HOST_DB: ${HOST_DB}
+            PORT_DB: ${PORT_DB}
+            SECRET_JWT: ${SECRET_JWT}
+            EXPIRE_JWT: ${EXPIRE_JWT}
+            SIZE_PAGINATION: ${SIZE_PAGINATION}
+            USER_ADMIN: ${USER_ADMIN}
+            PASSWORD_ADMIN: ${PASSWORD_ADMIN}
+
+    db:
+        image: mysql
+        container_name: xpcrm-db
+        restart: always
+        volumes:
+            - ./mysql-dump:/docker-entrypoint-initdb.d
+        command: --default-authentication-plugin=mysql_native_password
+        environment:
+            MYSQL_ROOT_PASSWORD: ${PASSWORD_DB}
+        ports:
+            - "${PORT_DB}:${PORT_DB}"

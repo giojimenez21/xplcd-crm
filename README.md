@@ -1,22 +1,13 @@
-# miti-api
+# xpcrm-api
 
-Para poder ejecutar este proyecto es necesario tener instalado el compilador de typescript.
+1. Tener instalado Docker y Docker Compose.
+
+2. Verificar que no este corriendo localmente Mysql en el puerto 3306.
+
+3. Renombrar el archivo .env.template a .env
+
+4. Ejecutar el siguiente comando:
 
 ```
-    npm i -g typescript
-```
-
-1. Instalar las dependencias del proyecto.
-```
-    npm i 
-```
-
-2. Ejecutar el siguiente comando el cual sera el compilador de typescript
-```
-    tsc -w
-```
-
-3. En otra instancia de la terminal ejecutar el siguiente comando.
-```
-    npm run dev
+    docker compose up -d
 ```

@@ -5,6 +5,6 @@ export interface Token {
 }
 
 export enum TokenError {
-    TokenExpiredError = "TokenExpiredError",
-    JsonWebTokenError = "JsonWebTokenError",
+    Expired = "TokenExpiredError",
+    NotValidate = "JsonWebTokenError",
 }

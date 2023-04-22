@@ -14,7 +14,14 @@ routerUser.post("/login", userCtrl.login);
 
 routerUser.post("/register", verifyToken, validateRoles("ADMIN") ,userCtrl.registerUser);
 
-
 routerUser.get("/renew", verifyToken, userCtrl.renewToken);
 
-routerUser.put("/verifyUser", userCtrl.verifyUser);
+routerUser.put("/verifyUser", verifyToken ,userCtrl.verifyUser);
+
+routerUser.put("/changeUserStatus/:id", verifyToken, validateRoles("ADMIN"), userCtrl.changeStatusUser);
+
+routerUser.get("/findAllRoles", verifyToken, validateRoles("ADMIN"), userCtrl.findAllRoles);
+
+routerUser.get("/findAllLocations", verifyToken, validateRoles("ADMIN"), userCtrl.findAllLocations);
+
+routerUser.get("/getUsers?:page", verifyToken, validateRoles("ADMIN"), userCtrl.getUsers)

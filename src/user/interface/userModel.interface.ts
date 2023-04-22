@@ -32,7 +32,7 @@ export interface UserEntity {
     nameRole: string;
     isActive: boolean;
     isVerify: boolean;
-    token: string;
+    token?: string;
 }
 
 export interface UserToRegister {

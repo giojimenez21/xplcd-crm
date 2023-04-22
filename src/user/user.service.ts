@@ -1,10 +1,11 @@
 import bcrypt from "bcryptjs";
+import { Op } from "sequelize";
 
+import { ErrorService } from "../common";
 import { generateToken } from "./helpers";
 import { Location, Role, User } from "./models";
-import { IUserservice, UserToRegister, UserEntity, UserWithRoleAndLocation } from "./interface";
-import { ErrorService } from "../common";
-import { toUserEntity } from "./adapters/toUser";
+import { toUserEntityWithToken, toUserEntityWithoutToken } from "./adapters/toUser";
+import { IUserservice, UserToRegister, UserEntity, UserWithRoleAndLocation, RoleModel, LocationModel } from "./interface";
 
 export class UserService implements IUserservice {
     async createUser(user: UserToRegister): Promise<UserEntity> {
@@ -25,7 +26,7 @@ export class UserService implements IUserservice {
 
         const userCreated = await this.findUserById(userToCreate.id);
         const token = await generateToken(userCreated.id, userCreated.userName, userCreated.role.name);
-        return toUserEntity(userCreated, token);
+        return toUserEntityWithToken(userCreated, token);
     }
 
     async findUserById(id: number): Promise<UserWithRoleAndLocation> {
@@ -78,7 +79,12 @@ export class UserService implements IUserservice {
                     },
                 },
             ],
-            where: { userName },
+            where: {
+                [Op.and]: [
+                    { userName },
+                    { userName: { [Op.ne]: process.env.USER_ADMIN! } },
+                ],
+            },
         })) as UserWithRoleAndLocation;
 
         if (!userFind) {
@@ -110,14 +116,14 @@ export class UserService implements IUserservice {
 
         const token = await generateToken(userFind.id, userFind.userName, userFind.role.name);
 
-        return toUserEntity(userFind, token);
+        return toUserEntityWithToken(userFind, token);
     }
 
     async renewToken(userName: string): Promise<UserEntity> {
         const userFind = await this.findUserByUserName(userName);
         const token = await generateToken(userFind.id, userName, userFind.role.name);
 
-        return toUserEntity(userFind, token);
+        return toUserEntityWithToken(userFind, token);
     }
 
     async existUser(userName: string): Promise<boolean> {
@@ -144,5 +150,69 @@ export class UserService implements IUserservice {
         });
 
         return "Usuario verificado.";
+    }
+
+    async changeUserStatus(id: number): Promise<string> {
+        const userToChangeStatus = await this.findUserById(id);
+        await userToChangeStatus.update({
+            isActive: userToChangeStatus.isActive ? false : true
+        });
+        return userToChangeStatus.isActive ? "El usuario fue reactivado." : "El usuario fue dado de baja.";
+    }
+
+    async findAllRoles(): Promise<RoleModel[]> {
+        const roles = await Role.findAll();
+        return roles;
+    }
+
+    async findAllLocations(): Promise<LocationModel[]> {
+        const locations = await Location.findAll();
+        return locations;
+    }
+
+    async getUsers(page: number = 1): Promise<UserEntity[]> {
+        const sizePagination = +process.env.SIZE_PAGINATION!;
+        const userAdmin = process.env.USER_ADMIN;
+        const users = (await User.findAll({
+            include: [
+                {
+                    model: Role,
+                    attributes: {
+                        exclude: ["createdAt", "updatedAt"],
+                    },
+                },
+                {
+                    model: Location,
+                    attributes: {
+                        exclude: ["createdAt", "updatedAt"],
+                    },
+                },
+            ],
+            where: {
+                userName: {
+                    [Op.ne]: userAdmin,
+                },
+            },
+            limit: sizePagination,
+            offset: page === 1 ? 0 : sizePagination * (page - 1)
+        })) as UserWithRoleAndLocation[];
+
+        return users.map(user => toUserEntityWithoutToken(user))
+    }
+
+    async createUserAdmin(): Promise<void> {
+        const userAdminExist = await this.existUser(process.env.USER_ADMIN!);
+        if(!userAdminExist) {
+            await User.create({
+                firstName: process.env.USER_ADMIN!,
+                lastName: process.env.USER_ADMIN!,
+                userName: process.env.USER_ADMIN!,
+                password: process.env.PASSWORD_ADMIN!,
+                idLocation: 1,
+                idRole: 1,
+                isVerify: true,
+                isActive: true,
+            });
+        }
     }
 }

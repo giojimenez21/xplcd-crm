@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { NextFunction, Request, Response } from "express";
-
 import { TokenError } from '../interface';
+
 
 export const verifyToken = async(req: Request, res: Response, next: NextFunction) => {
     const tokenBearer = req.headers["authorization"]?.split(" ")[1];
@@ -10,16 +10,15 @@ export const verifyToken = async(req: Request, res: Response, next: NextFunction
     }
     try {
         const { userName, role } = jwt.verify(tokenBearer, process.env.SECRET_JWT!) as { userName: string, role: string };
-        console.log(userName, role);
         req.userName = userName;
         req.role = role
 
     } catch (e: any) {
-        if(e.name === TokenError.TokenExpiredError) {
+        if(e.name === TokenError.Expired) {
             return res.status(401).json({ error: "Token expirado." });
         }
 
-        if(e.name === TokenError.JsonWebTokenError) {
+        if(e.name === TokenError.NotValidate) {
             return res.status(403).json({ error: "No se pudo validar el token." })
         }
 
