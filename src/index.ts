@@ -18,6 +18,7 @@ app.use("/user", routerUser)
 
 db.authenticate().then(() => console.log("DB sync online."));
 app.listen(PORT, () => console.log(`Listen in port: ${PORT}`));
+
 userService.createUserAdmin()
     .then(() => console.log("User admin created."))
     .catch((e) => console.log(e.message));

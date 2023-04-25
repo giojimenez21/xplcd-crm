@@ -98,13 +98,31 @@ export class UserService implements IUserservice {
     }
 
     async login(userName: string, password: string): Promise<UserEntity> {
-        const userFind = await this.findUserByUserName(userName);
-        if (!userFind) {
-            throw new ErrorService(
-                404,
-                "No existe ningun usuario con ese userName."
-            );
+        const userFind = (await User.findOne({
+            attributes: {
+                exclude: ["createdAt", "updatedAt"],
+            },
+            include: [
+                {
+                    model: Role,
+                    attributes: {
+                        exclude: ["createdAt", "updatedAt"],
+                    },
+                },
+                {
+                    model: Location,
+                    attributes: {
+                        exclude: ["createdAt", "updatedAt"],
+                    },
+                },
+            ],
+            where: { userName },
+        })) as UserWithRoleAndLocation;
+
+        if(!userFind) {
+            throw new ErrorService(404, "No existe el usuario");
         }
+        
         const passwordIsCorrect = await bcrypt.compare(
             password,
             userFind.password!
@@ -202,12 +220,14 @@ export class UserService implements IUserservice {
 
     async createUserAdmin(): Promise<void> {
         const userAdminExist = await this.existUser(process.env.USER_ADMIN!);
+        const salt = bcrypt.genSaltSync(10);
+        const passwordHash = bcrypt.hashSync(process.env.PASSWORD_ADMIN!, salt);
         if(!userAdminExist) {
             await User.create({
                 firstName: process.env.USER_ADMIN!,
                 lastName: process.env.USER_ADMIN!,
                 userName: process.env.USER_ADMIN!,
-                password: process.env.PASSWORD_ADMIN!,
+                password: passwordHash,
                 idLocation: 1,
                 idRole: 1,
                 isVerify: true,
