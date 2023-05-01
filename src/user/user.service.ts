@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { Op } from "sequelize";
+import { Op, col, fn, literal, where } from "sequelize";
 
 import { ErrorService } from "../common";
 import { generateToken } from "./helpers";
@@ -116,7 +116,11 @@ export class UserService implements IUserservice {
                     },
                 },
             ],
-            where: { userName },
+            where: where(
+                fn("BINARY", col("userName")),
+                "=",
+                userName
+            )
         })) as UserWithRoleAndLocation;
 
         if(!userFind) {

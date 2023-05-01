@@ -50,9 +50,9 @@ export class UserController {
     }
 
     public verifyUser = async(req: Request, res: Response) => {
-        const { userName, password, newPassword } = req.body;
+        const { password, newPassword } = req.body;
         try {
-            const responseService = await this.userService.verifyUser(userName, password, newPassword);
+            const responseService = await this.userService.verifyUser(req.userName, password, newPassword);
             return res.status(200).json({ message: responseService });
         } catch (e: any) {
             if(e instanceof ErrorService) {

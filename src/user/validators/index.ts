@@ -27,8 +27,6 @@ export const validatorRegister = [
 ];
 
 export const validatorVerifyUser = [
-    body("userName")
-        .notEmpty().withMessage("El userName es requerido."),
     body("password")
         .notEmpty().withMessage("El password es requerido.")
         .isLength({ min:6 }).withMessage("La logitud minima debe ser de 6 caracteres."),
