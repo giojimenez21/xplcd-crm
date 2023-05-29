@@ -1,0 +1,13 @@
+{
+  "user": {
+    "id": 1,
+    "firstName": "Ernesto",
+    "lastName": "Perez Mártinez",
+    "userName": "erez",
+    "idLocation": 1,
+    "location": "101",
+    "idRole": 1,
+    "role": "ADMIN"
+  },
+  "token": "token123"
+}
